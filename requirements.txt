@@ -6,6 +6,9 @@ pydantic[email]==2.7.4
 email-validator==2.2.0
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+# passlib 1.7.4 is incompatible with bcrypt >= 4.1 (its backend self-test breaks);
+# without this pin a fresh deploy installs bcrypt 5.x and hash_password() raises.
+bcrypt==4.0.1
 python-multipart==0.0.9
 apscheduler==3.10.4
 feedparser==6.0.11
