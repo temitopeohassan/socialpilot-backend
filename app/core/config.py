@@ -28,6 +28,17 @@ class Settings(BaseSettings):
     TIKTOK_CLIENT_KEY: Optional[str] = None
     TIKTOK_CLIENT_SECRET: Optional[str] = None
 
+    # Email (SMTP) — welcome emails are skipped entirely if SMTP_HOST is unset
+    SMTP_HOST: Optional[str] = None
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    SMTP_FROM_EMAIL: Optional[str] = None  # defaults to SMTP_USERNAME
+    SMTP_FROM_NAME: str = "SocialPilot"
+
+    # Public URL of the frontend, used in email links
+    FRONTEND_URL: str = "https://socialpilotapp.xyz"
+
     # File Storage
     UPLOAD_DIR: str = "./uploads"
     MAX_UPLOAD_SIZE_MB: int = 50

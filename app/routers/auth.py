@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 from pydantic import BaseModel, EmailStr
 from app.core.database import get_session
 from app.core.security import verify_password, hash_password, create_access_token, get_current_user
 from app.models.user import User, Workspace, WorkspaceMember, UserRole
+from app.services.email import send_welcome_email
 import re
 
 router = APIRouter()
@@ -23,7 +24,11 @@ class TokenResponse(BaseModel):
 
 
 @router.post("/register", response_model=TokenResponse)
-async def register(data: RegisterRequest, session: Session = Depends(get_session)):
+async def register(
+    data: RegisterRequest,
+    background_tasks: BackgroundTasks,
+    session: Session = Depends(get_session),
+):
     existing = session.exec(select(User).where(User.email == data.email)).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -50,6 +55,8 @@ async def register(data: RegisterRequest, session: Session = Depends(get_session
     member = WorkspaceMember(workspace_id=workspace.id, user_id=user.id, role=UserRole.OWNER)
     session.add(member)
     session.commit()
+
+    background_tasks.add_task(send_welcome_email, user.name, user.email)
 
     token = create_access_token({"sub": str(user.id)})
     return TokenResponse(
